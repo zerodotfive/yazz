@@ -1,0 +1,43 @@
+#!/usr/bin/perl -W
+
+use strict;
+use warnings;
+
+my $help = "yazzrep uses perl regexps to analyze yazz xml logs\nUsage: yazzrep [-t TimeRegexp] [-s ScriptFilenameRegexp] ";
+   $help.= "[-u UriRegexp] [-f FunctionBodyRegexp] [-a RemoteIP] [LogFile]\nyazzrep can read log from LogFile or STDOUT\n";
+
+if ($#ARGV<1) { print $help; exit; }
+
+my $timemask=".*";
+my $filename=".*";
+my $wurimask=".*";
+my $funcmask=".*";
+my $rmtaddrs=".*";
+
+for (my $pn = 0; $pn<=$#ARGV; $pn++){
+        if ($ARGV[$pn] eq "-t") { $timemask = ".*" . $ARGV[$pn+1] . ".*" }
+        if ($ARGV[$pn] eq "-s") { $filename = ".*" . $ARGV[$pn+1] . ".*" }
+        if ($ARGV[$pn] eq "-u") { $wurimask = ".*" . $ARGV[$pn+1] . ".*" }
+        if ($ARGV[$pn] eq "-f") { $funcmask = ".*" . $ARGV[$pn+1] . ".*" }
+	if ($ARGV[$pn] eq "-a") { $rmtaddrs = ".*" . $ARGV[$pn+1] . ".*" }
+        if ($ARGV[$pn] eq "-h") { print $help }
+        if ($ARGV[$pn] eq "--help") { print $help }
+}
+
+if ($#ARGV%2 != 0){
+        open(LOGFILEH, "<-");
+}
+else {
+        open(LOGFILEH, "<$ARGV[$#ARGV]") || die ("Can not open file \"$ARGV[$#ARGV]\"\n");
+}
+my $logbuf;
+while($logbuf=<LOGFILEH>){
+	if ($logbuf =~ /<yazzevent /) {
+		$logbuf .= <LOGFILEH> until $logbuf =~ /\s*([^.]*)<\/yazzevent>/;
+		if ($logbuf =~ /<yazzevent timestamp="$timemask" file="$filename" line=".*" uri="$wurimask" remote_addr="$rmtaddrs">.+<function>$funcmask<\/function>.<\/yazzevent>/s) {
+			print $logbuf;
+		}
+	}
+}
+close(LOGFILEH);
+
