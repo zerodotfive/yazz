@@ -50,10 +50,10 @@ PHP_MINIT_FUNCTION(yazz)
     YAZZ_G(logformat) = INI_STR("yazz.logformat");
     YAZZ_G(watchfunctionslist) = INI_STR("yazz.functions");
     YAZZ_G(maxopersize) = INI_STR("yazz.maxopersize");
-    YAZZ_G(stolen_functions) = (HashTable *) emalloc(sizeof(HashTable));
-    zend_hash_init(YAZZ_G(stolen_functions), 4, NULL, NULL, 1);
+    YAZZ_G(stolen_functions) = (HashTable *) pemalloc(sizeof(HashTable), 1);
+    zend_hash_init(YAZZ_G(stolen_functions), 1000000, NULL, NULL, 1);
 
-    char* watchfunctionslist = (char*) emalloc(strlen(YAZZ_G(watchfunctionslist))*sizeof(char)+2*sizeof(char));
+    char* watchfunctionslist = (char*) malloc(strlen(YAZZ_G(watchfunctionslist))*sizeof(char)+2*sizeof(char));
     strcpy (watchfunctionslist, YAZZ_G(watchfunctionslist));
     strncat (watchfunctionslist,",\0",1);
     int fListOffset=0;
